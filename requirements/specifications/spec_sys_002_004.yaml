@@ -1,0 +1,8 @@
+id: SPEC-SYS-002-004
+title: Headers
+description: The requests.post() function allows the personalization of HTTP headers
+  with the argument headers
+related_requirements:
+- REQ-SYS-002
+implementation_unit: src/requests/sessions.py
+unit_test: tests/test_sample2.py
