@@ -5,4 +5,4 @@ description: The requests.post() function allows the personalization of HTTP hea
 related_requirements:
 - REQ-SYS-002
 implementation_unit: src/requests/sessions.py
-unit_test: tests/test_sample3.py
+unit_test: tests/test_requests.py
