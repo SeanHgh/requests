@@ -4,4 +4,4 @@ description: d
 related_requirements:
 - REQ-SYS-002
 implementation_unit: src/requests/sessions.py
-unit_test: tests/test_sample4.py
+unit_test: tests/test_sample.py
