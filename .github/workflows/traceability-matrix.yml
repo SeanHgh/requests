@@ -53,17 +53,20 @@ jobs:
       run: |
         echo "Generating traceability matrix..."
         
+        # Create output directory
+        mkdir -p matrix_output
+        
         # Set up Python path in case of manual installation
         export PYTHONPATH="/tmp/cdlreq:$PYTHONPATH"
         
         # Try different ways to run cdlreq
         if command -v cdlreq >/dev/null 2>&1; then
           echo "Using installed cdlreq command"
-          cdlreq export --directory . --output requirements/traceability_matrix.xlsx
+          cdlreq export --directory . --output matrix_output/traceability_matrix.xlsx
         elif python -c "import cdlreq" 2>/dev/null; then
           echo "Using cdlreq Python module"
           # Generate Excel format only (cdlreq export doesn't support --format option)
-          python -c "from cdlreq.cli.commands import cli; cli(['export', '--directory', '.', '--output', 'requirements/traceability_matrix.xlsx'])"
+          python -c "from cdlreq.cli.commands import cli; cli(['export', '--directory', '.', '--output', 'matrix_output/traceability_matrix.xlsx'])"
         else
           echo "Error: Could not find or import cdlreq"
           exit 1
@@ -72,7 +75,7 @@ jobs:
     - name: Verify matrix files were created
       run: |
         echo "Generated files:"
-        ls -la requirements/traceability_matrix*
+        ls -la matrix_output/
         
         # Count requirements and specifications
         REQ_COUNT=$(find requirements -name "*.yaml" -not -path "*/specifications/*" | wc -l)
@@ -81,10 +84,16 @@ jobs:
         echo "Matrix contains:"
         echo "- Requirements: $REQ_COUNT"
         echo "- Specifications: $SPEC_COUNT"
+        
+        # Create summary file for artifact
+        echo "Traceability Matrix Summary" > matrix_output/summary.txt
+        echo "Generated: $(date)" >> matrix_output/summary.txt
+        echo "Requirements: $REQ_COUNT" >> matrix_output/summary.txt
+        echo "Specifications: $SPEC_COUNT" >> matrix_output/summary.txt
 
-    - name: Upload artifacts
+    - name: Upload traceability matrix as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: traceability-matrix
-        path: requirements/traceability_matrix.*
+        name: traceability-matrix-${{ github.run_id }}
+        path: matrix_output/
         retention-days: 30

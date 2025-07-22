@@ -130,13 +130,23 @@ jobs:
 
     - name: Generate matrix
       run: |
+        # Create output directory
+        mkdir -p matrix_output
+        
         export PYTHONPATH="/tmp/cdlreq:$PYTHONPATH"
-        python -c "from cdlreq.cli.commands import cli; cli(['export', '--directory', '.', '--output', 'requirements/traceability_matrix.xlsx'])"
+        python -c "from cdlreq.cli.commands import cli; cli(['export', '--directory', '.', '--output', 'matrix_output/traceability_matrix.xlsx'])"
+        
+        # Create summary
+        echo "Traceability Matrix Summary" > matrix_output/summary.txt
+        echo "Generated: $(date)" >> matrix_output/summary.txt
+        REQ_COUNT=$(find requirements -name "*.yaml" -not -path "*/specifications/*" | wc -l)
+        SPEC_COUNT=$(find requirements/specifications -name "*.yaml" 2>/dev/null | wc -l || echo 0)
+        echo "Requirements: $REQ_COUNT" >> matrix_output/summary.txt
+        echo "Specifications: $SPEC_COUNT" >> matrix_output/summary.txt
 
-    - name: Commit matrix
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add requirements/traceability_matrix.xlsx
-        git diff --staged --quiet || git commit -m "Update traceability matrix"
-        git push || echo "No changes to push"
+    - name: Upload matrix as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: traceability-matrix-${{ github.run_id }}
+        path: matrix_output/
+        retention-days: 30
